@@ -1,0 +1,6 @@
+@RachaInteligente_HostAddress = http://localhost:5298
+
+GET {{RachaInteligente_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
