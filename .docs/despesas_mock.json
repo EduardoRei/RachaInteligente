@@ -1,0 +1,163 @@
+[
+  {
+    "Descricao": "Uber Volta Evento",
+    "Data": "2024-03-14",
+    "Valor": 45.5,
+    "PagoPor": "Fernanda",
+    "Nomes": "Bruno, Ricardo, Ana, Carlos, Fernanda"
+  },
+  {
+    "Descricao": "Almoço Buffet",
+    "Data": "2024-03-15",
+    "Valor": 72.0,
+    "PagoPor": "Ana",
+    "Nomes": "Bruno, Ricardo, Ana, Carlos, Fernanda"
+  },
+  {
+    "Descricao": "Porção de Iscas",
+    "Data": "2024-03-16",
+    "Valor": 89.0,
+    "PagoPor": "Ricardo",
+    "Nomes": "Bruno, Fernanda"
+  },
+  {
+    "Descricao": "Gelo e Bebidas",
+    "Data": "2024-03-13",
+    "Valor": 15.0,
+    "PagoPor": "Ricardo",
+    "Nomes": "Bruno, Ricardo, Ana, Carlos, Fernanda"
+  },
+  {
+    "Descricao": "Supermercado Geral",
+    "Data": "2024-03-14",
+    "Valor": 840.2,
+    "PagoPor": "Ricardo",
+    "Nomes": "Bruno, Ricardo, Ana, Carlos, Fernanda"
+  },
+  {
+    "Descricao": "Restaurante Peixe",
+    "Data": "2024-03-16",
+    "Valor": 310.5,
+    "PagoPor": "Ricardo",
+    "Nomes": "Bruno, Ricardo, Ana, Carlos, Fernanda"
+  },
+  {
+    "Descricao": "Lanches da Tarde",
+    "Data": "2024-03-17",
+    "Valor": 92.0,
+    "PagoPor": "Ricardo",
+    "Nomes": "Bruno, Ricardo, Ana, Carlos, Fernanda"
+  },
+  {
+    "Descricao": "Abastecimento",
+    "Data": "2024-03-13",
+    "Valor": 280.0,
+    "PagoPor": "Bruno",
+    "Nomes": "Bruno, Ricardo, Ana"
+  },
+  {
+    "Descricao": "Pedido Pizzaria",
+    "Data": "2024-03-13",
+    "Valor": 115.0,
+    "PagoPor": "Bruno",
+    "Nomes": "Bruno, Ricardo, Ana"
+  },
+  {
+    "Descricao": "Pedágio Rodovia",
+    "Data": null,
+    "Valor": 24.5,
+    "PagoPor": "Bruno",
+    "Nomes": "Bruno, Ricardo, Ana"
+  },
+  {
+    "Descricao": "Kit Churrasco",
+    "Data": "2024-03-13",
+    "Valor": 195.4,
+    "PagoPor": "Bruno",
+    "Nomes": "Bruno, Ricardo, Ana, Carlos, Fernanda"
+  },
+  {
+    "Descricao": "Mercado (Bebidas)",
+    "Data": "2024-03-13",
+    "Valor": 82.3,
+    "PagoPor": "Bruno",
+    "Nomes": "Bruno, Ricardo, Ana, Carlos, Fernanda"
+  },
+  {
+    "Descricao": "Água Mineral",
+    "Data": "2024-03-14",
+    "Valor": 28.5,
+    "PagoPor": "Bruno",
+    "Nomes": "Bruno, Ricardo, Ana, Carlos, Fernanda"
+  },
+  {
+    "Descricao": "Uber Ida Evento",
+    "Data": "2024-03-14",
+    "Valor": 42.0,
+    "PagoPor": "Bruno",
+    "Nomes": "Bruno, Ricardo, Ana, Carlos, Fernanda"
+  },
+  {
+    "Descricao": "Uber Volta Extra",
+    "Data": "2024-03-14",
+    "Valor": 55.0,
+    "PagoPor": "Bruno",
+    "Nomes": "Bruno, Ricardo, Ana, Carlos, Fernanda"
+  },
+  {
+    "Descricao": "Padaria Mercearia",
+    "Data": "2024-03-15",
+    "Valor": 26.0,
+    "PagoPor": "Bruno",
+    "Nomes": "Bruno, Ricardo, Ana, Carlos, Fernanda"
+  },
+  {
+    "Descricao": "Uber Ida Show",
+    "Data": "2024-03-14",
+    "Valor": 94.0,
+    "PagoPor": "Carlos",
+    "Nomes": "Bruno, Ricardo, Ana, Carlos, Fernanda"
+  },
+  {
+    "Descricao": "Mercado (Frios)",
+    "Data": "2024-03-15",
+    "Valor": 71.5,
+    "PagoPor": "Carlos",
+    "Nomes": "Bruno, Ricardo, Ana, Carlos, Fernanda"
+  },
+  {
+    "Descricao": "Combustível Estrada",
+    "Data": "2024-03-17",
+    "Valor": 120.0,
+    "PagoPor": "Carlos",
+    "Nomes": "Bruno, Ricardo, Ana, Carlos, Fernanda"
+  },
+  {
+    "Descricao": "Estacionamento Centro",
+    "Data": "2024-03-17",
+    "Valor": 45.0,
+    "PagoPor": "Carlos",
+    "Nomes": "Bruno, Ricardo, Ana, Carlos, Fernanda"
+  },
+  {
+    "Descricao": "Mercado (Limpeza)",
+    "Data": "2024-03-17",
+    "Valor": 110.0,
+    "PagoPor": "Carlos",
+    "Nomes": "Bruno, Ricardo, Ana, Carlos, Fernanda"
+  },
+  {
+    "Descricao": "Aluguel Barraca",
+    "Data": "2024-03-17",
+    "Valor": 60.0,
+    "PagoPor": "Carlos",
+    "Nomes": "Ricardo"
+  },
+  {
+    "Descricao": "Café e Doces",
+    "Data": "2024-03-17",
+    "Valor": 18.0,
+    "PagoPor": "Carlos",
+    "Nomes": "Ricardo"
+  }
+]
