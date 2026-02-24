@@ -27,10 +27,9 @@ graph TD
     C --> D(Calcula o saldo de cada um)
     D --> E(Otimiza os pagamentos)
     E --> F[Relatório de Transparência .txt]
-    E --> G[JSON com as transações finais]
     
-    style F stroke:#333,stroke-width:2px
-    style G fill:#0078d4,color:#fff,stroke:#333,stroke-width:2px
+    style A stroke:#333,stroke-width:2px
+    style F fill:#0078d4,color:#fff,stroke:#333,stroke-width:2px
 ```
 
 ### Por que esse fluxo é eficiente?
@@ -56,14 +55,23 @@ Para testar a API, você pode usar os arquivos de exemplo que deixamos prontos n
 
 ---
 
-## 📁 Como usar
+## 🚀 Como usar
 
+### Opção 1: Docker (Mais fácil)
+Se você tem o Docker instalado, basta rodar:
+```bash
+docker build -t rachainteligente .
+docker run -d -p 8080:8080 --name rachainteligente rachainteligente
+```
+Acesse `http://localhost:8080/scalar/` no seu navegador.
+
+### Opção 2: Manual (.NET 10)
 1.  Tenha o SDK do .NET 10 instalado.
 2.  Clone o projeto e rode:
     ```bash
     dotnet run --project RachaInteligente
     ```
-3.  Acesse `/scalar/v1` no seu navegador e suba seu arquivo de despesas.
+3.  Acesse `http://localhost:5298/scalar/` no seu navegador e suba seu arquivo de despesas.
 
 ---
 
