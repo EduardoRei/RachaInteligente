@@ -1,4 +1,6 @@
 ﻿using RachaInteligente.Dto;
+using System.Globalization;
+using System.Text;
 
 namespace RachaInteligente.Service;
 
