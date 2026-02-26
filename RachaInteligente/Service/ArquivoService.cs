@@ -1,5 +1,4 @@
 ﻿using RachaInteligente.Dto;
-using System.Drawing;
 using System.Globalization;
 using System.Text;
 
@@ -19,43 +18,67 @@ public static class ArquivoService
         }
         else
         {
-            throw new NotSupportedException("Formato de arquivo não suportado. Por favor, envie um arquivo CSV.");
+            throw new ArgumentException("Formato de arquivo não suportado. Por favor, envie um arquivo CSV ou JSON.");
         }
     }
 
     private static List<DespesaDto> LerArquivoJson(IFormFile file)
     {
-        var despesas = new List<DespesaDto>();
-        using (var stream = file.OpenReadStream()) 
-        using (var reader = new StreamReader(stream))
+        try
         {
-            var json = reader.ReadToEnd();
-            despesas = System.Text.Json.JsonSerializer.Deserialize<List<DespesaDto>>(json);
-            foreach (var despesa in despesas)
+            var despesas = new List<DespesaDto>();
+            using (var stream = file.OpenReadStream())
+            using (var reader = new StreamReader(stream))
             {
-                DefinirNomesEDevedoresDespesas(despesa);
+                var json = reader.ReadToEnd();
+                despesas = System.Text.Json.JsonSerializer.Deserialize<List<DespesaDto>>(json, new System.Text.Json.JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                });
+
+                foreach (var despesa in despesas)
+                {
+                    DefinirNomesEDevedoresDespesas(despesa);
+                }
             }
+            return despesas;
         }
-        return despesas;
+        catch (System.Text.Json.JsonException)
+        {
+            throw new ArgumentException("O arquivo JSON não está no layout esperado. Verifique se ele é uma lista de objetos DespesaDto.");
+        }
     }
 
     private static List<DespesaDto> LerArquivoCsv(IFormFile file)
     {
         var primeiraLinha = true;
         var despesas = new List<DespesaDto>();
+        var expectedHeaders = new[] { "Despesa", "Data", "Valor", "Pago por", " Nomes" };
+
         using (var stream = file.OpenReadStream())
         using (var reader = new StreamReader(stream))
         {
             string line;
             while ((line = reader.ReadLine()) != null)
             {
+                if (string.IsNullOrWhiteSpace(line)) continue;
+
+                var parts = line.Split(';');
+
                 if (primeiraLinha)
                 {
+                    for (int i = 0; i < expectedHeaders.Length; i++)
+                    {
+                        if (parts.Length <= i || !parts[i].Trim().Equals(expectedHeaders[i].Trim(), StringComparison.OrdinalIgnoreCase))
+                        {
+                            var veio = (parts.Length > i) ? parts[i] : "nada";
+                            throw new ArgumentException($"arquivo não esta no layout esperado, o campo {expectedHeaders[i]} não esta como esperado. Veio {veio} esperado {expectedHeaders[i]}");
+                        }
+                    }
                     primeiraLinha = false;
                     continue;
                 }
 
-                var parts = line.Split(';');
                 if (parts.Length >= 5)
                 {
                     var valorTexto = parts[2].Trim().Trim('"');
