@@ -80,3 +80,5 @@ app.MapPost("/Rachar", async (IFormFile file) =>
 
 app.Run();
 
+public partial class Program { }
+
