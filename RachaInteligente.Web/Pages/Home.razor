@@ -117,17 +117,24 @@
                                         </select>
                                     </td>
                                     <td style="position: relative;">
-                                        <button class="btn btn-sm w-100 text-start border bg-white @(string.IsNullOrEmpty(d.Nomes) ? "text-muted" : "text-dark fw-bold border-success")" @onclick="() => ToggleDropdown(index)">
-                                            <i class="bi bi-people me-1"></i> @(string.IsNullOrEmpty(d.Nomes) ? "Quem participou?" : LimitarTexto(d.Nomes, 18))
+                                        @* BOTÃO COM TOOLTIP (HINT) *@
+                                        <button class="btn btn-sm w-100 text-start border bg-white @(string.IsNullOrEmpty(d.Nomes) ? "text-muted" : "text-dark fw-bold border-success")" 
+                                                @onclick="() => ToggleDropdown(index)" 
+                                                title="@(string.IsNullOrEmpty(d.Nomes) ? "Ninguém selecionado" : d.Nomes)">
+                                            <i class="bi bi-people me-1"></i> @(string.IsNullOrEmpty(d.Nomes) ? "Quem participou?" : LimitarTexto(d.Nomes, 120))
                                         </button>
+                                        
                                         @if (abertoDropdownIndex == index)
                                         {
-                                            <div class="dropdown-menu show p-3 shadow-lg border-success" style="position: absolute; top: 100%; left: 0; z-index: 1000; min-width: 220px; display: block;">
+                                            <div class="dropdown-menu show p-3 shadow-lg border-success" style="position: absolute; top: 100%; left: 0; z-index: 1000; min-width: 260px; display: block;">
                                                 <div class="d-flex justify-content-between mb-2 border-bottom pb-2">
                                                     <span class="small fw-bold text-success">Dividir entre:</span>
-                                                    <button class="btn btn-sm btn-link text-success p-0 text-decoration-none" @onclick="() => SelecionarTodos(d)">Todos</button>
+                                                    <div class="d-flex gap-2">
+                                                        <button class="btn btn-sm btn-link text-success p-0 text-decoration-none fw-bold" @onclick="() => SelecionarTodos(d)">Todos</button>
+                                                        <button class="btn btn-sm btn-link text-danger p-0 text-decoration-none fw-bold" @onclick="() => LimparSelecao(d)">Limpar</button>
+                                                    </div>
                                                 </div>
-                                                <div style="max-height: 180px; overflow-y: auto;">
+                                                <div style="max-height: 250px; overflow-y: auto;">
                                                     @foreach (var p in participantes)
                                                     {
                                                         <div class="form-check small mb-1">
@@ -282,7 +289,29 @@
     private bool IsParticipanteSelecionado(DespesaDto d, string nome) => !string.IsNullOrWhiteSpace(d.Nomes) && d.Nomes.Split(',').Select(n => n.Trim()).Contains(nome);
     private void ToggleParticipante(DespesaDto d, string nome, object? checkedValue) { var nomesLista = string.IsNullOrWhiteSpace(d.Nomes) ? new List<string>() : d.Nomes.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(n => n.Trim()).ToList(); if (checkedValue is bool b && b) { if (!nomesLista.Contains(nome)) nomesLista.Add(nome); } else { nomesLista.Remove(nome); } d.Nomes = string.Join(", ", nomesLista); StateHasChanged(); }
     private void SelecionarTodos(DespesaDto d) { d.Nomes = string.Join(", ", participantes); StateHasChanged(); }
-    private string LimitarTexto(string texto, int limite) => texto.Length > limite ? texto.Substring(0, limite) + "..." : texto;
+    private void LimparSelecao(DespesaDto d) { d.Nomes = ""; StateHasChanged(); }
+    
+    private string LimitarTexto(string texto, int limite)
+    {
+        if (string.IsNullOrWhiteSpace(texto)) return string.Empty;
+        if (texto.Length <= limite) return texto;
+        
+        var nomes = texto.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(n => n.Trim()).ToList();
+        var resultado = string.Empty;
+        var count = 0;
+        
+        foreach (var nome in nomes)
+        {
+            var candidato = string.IsNullOrEmpty(resultado) ? nome : $"{resultado}, {nome}";
+            // Se o próximo nome estourar o limite (considerando espaço para o "+X")
+            if (candidato.Length > limite - 12) break;
+            resultado = candidato;
+            count++;
+        }
+        
+        var restantes = nomes.Count - count;
+        return restantes > 0 ? $"{resultado} (+{restantes})" : resultado;
+    }
 
     private decimal ValidarValorPositivo(object? value)
     {

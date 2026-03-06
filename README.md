@@ -12,6 +12,28 @@ Além de te dizer quem paga quem, o sistema gera um "relatório de transparênci
 
 ---
 
+## 📸 Demonstração
+
+Confira abaixo como é a interface do **RachaInteligente** em ação:
+
+### 1. Processamento por Arquivo
+Arraste e solte seu arquivo CSV ou JSON para processar dezenas de despesas instantaneamente.
+![Tela de Envio de Arquivo](.docs/imgs/telaEnviarArquivo.png)
+
+### 2. Montagem Manual de Despesas
+Interface intuitiva para adicionar participantes e lançar gastos um a um, com seleção inteligente de quem participou de cada item.
+![Tela de Registro de Despesas](.docs/imgs/telaRegistrarDespesas.png)
+
+### 3. Resultado Otimizado
+O algoritmo calcula o menor número de transferências e gera um relatório detalhado.
+![Modal de Resultado](.docs/imgs/modalResultado.png)
+
+### 4. Documentação da API (Scalar)
+Endpoints documentados e prontos para testes rápidos via interface Scalar.
+![Documentação Scalar API](.docs/imgs/scalarApi.png)
+
+---
+
 ## ⚙️ Como a mágica acontece
 O fluxo foi desenhado para ser rápido e preciso:
 
