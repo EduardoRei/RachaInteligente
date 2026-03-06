@@ -1,5 +1,5 @@
 using FluentAssertions;
-using RachaInteligente.Dto;
+using RachaInteligente.Shared.Dto;
 using RachaInteligente.Service;
 
 namespace RachaInteligente.Tests;

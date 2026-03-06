@@ -22,6 +22,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\RachaInteligente\RachaInteligente.csproj" />
+    <ProjectReference Include="..\RachaInteligente.Shared\RachaInteligente.Shared.csproj" />
   </ItemGroup>
 
 </Project>
