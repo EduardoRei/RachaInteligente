@@ -24,6 +24,9 @@ provider.Mappings[".dll"] = "application/octet-stream";
 app.MapOpenApi();
 app.MapScalarApiReference();
 
+// Endpoint leve para Keep-Alive (Ping)
+app.MapGet("/health", () => Results.Ok("Server is running"));
+
 // Ordem correta de middlewares para Blazor Hosted
 app.UseBlazorFrameworkFiles();
 app.UseStaticFiles(new StaticFileOptions { ContentTypeProvider = provider });
