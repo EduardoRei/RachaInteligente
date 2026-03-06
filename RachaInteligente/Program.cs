@@ -1,5 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.StaticFiles;
 using RachaInteligente.Service;
+using RachaInteligente.Shared.Dto;
 using Scalar.AspNetCore;
 using System.Globalization;
 
@@ -11,74 +13,73 @@ CultureInfo.DefaultThreadCurrentCulture = cultureInfo;
 CultureInfo.DefaultThreadCurrentUICulture = cultureInfo;
 
 // Add services to the container.
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 
 var app = builder.Build();
 
+var provider = new FileExtensionContentTypeProvider();
+provider.Mappings[".wasm"] = "application/wasm";
+provider.Mappings[".dll"] = "application/octet-stream";
+
 app.MapOpenApi();
 app.MapScalarApiReference();
 
+// Ordem correta de middlewares para Blazor Hosted
+app.UseBlazorFrameworkFiles();
+app.UseStaticFiles(new StaticFileOptions { ContentTypeProvider = provider });
 
-app.UseHttpsRedirection();
-
-app.MapPost("/Rachar", async (IFormFile file) =>
+app.MapPost("/RacharPorArquivo", async (IFormFile file) =>
 {
     if (file == null || file.Length == 0)
-    {
-        return Results.BadRequest("Por favor, selecione um arquivo para upload.");
-    }
+        return Results.BadRequest("Por favor, selecione um arquivo.");
 
     try
     {
         var despesas = ArquivoService.ProcessarArquivo(file);
-
-        var todosLogs = new List<string>();
-
-        var (logsTransacoes, transacoes) = CalculadoraDeDespesasService.GerarTransacoes(despesas);
-        todosLogs.AddRange(logsTransacoes);
-
-        var (logsOtimizacao, transacoesOtimizadas) = CalculadoraDeDespesasService.GerarTransacoesOtimizado(transacoes);
-        todosLogs.AddRange(logsOtimizacao);
-
-        var stream = ArquivoService.GerarArquivoFinal(todosLogs, transacoesOtimizadas);
-
-        var filename = $"relatorio_racha_inteligente_{DateTime.Now:yyyyMMdd_HHmmss}.txt";
-
-        return Results.File(stream, "text/plain", filename);
+        return ProcessarGerarRelatorio(despesas);
     }
-    catch (ArgumentException ex)
-    {
-        return Results.BadRequest(ex.Message);
-    }
-    catch (Exception ex)
-    {
-        return Results.Problem($"Ocorreu um erro ao processar o arquivo: {ex.Message}");
-    }
+    catch (ArgumentException ex) { return Results.BadRequest(ex.Message); }
+    catch (Exception ex) { return Results.Problem(ex.Message); }
 })
-    .WithSummary("Processar arquivo de despesas e calcular acertos")
-    .WithDescription("""
-        Este endpoint recebe um arquivo de despesas (CSV ou JSON), processa os dados, 
-        calcula as transações necessárias para equilibrar os gastos entre os participantes 
-        e retorna um relatório detalhado em formato .txt.
-        
-        O arquivo é OBRIGATÓRIO.
-        Formatos aceitos:
-        - .CSV (Separado por ponto e vírgula, com cabeçalhos: Despesa;Data;Valor;Pago por; Nomes;)
-        - .JSON (Lista de objetos DespesaDto)
+.WithSummary("Processar arquivo de despesas")
+.DisableAntiforgery();
 
-        Estrutura do DespesaDto (JSON):
+app.MapPost("/Rachar", async ([FromBody] List<DespesaDto> despesas) =>
+{
+    if (despesas == null || !despesas.Any())
+        return Results.BadRequest("A lista de despesas não pode estar vazia.");
+
+    try
+    {
+        foreach (var despesa in despesas)
         {
-          "descricao": "string",
-          "data": "DateTime?",
-          "valor": "decimal",
-          "pagoPor": "string",
-          "nomes": "string (ex: 'Nome1, Nome2')"
+            ArquivoService.DefinirNomesEDevedoresDespesas(despesa);
         }
-    """)
-    .DisableAntiforgery();
+        return ProcessarGerarRelatorio(despesas);
+    }
+    catch (ArgumentException ex) { return Results.BadRequest(ex.Message); }
+    catch (Exception ex) { return Results.Problem(ex.Message); }
+})
+.WithSummary("Processar lista JSON de despesas")
+.DisableAntiforgery();
+
+app.MapFallbackToFile("index.html");
 
 app.Run();
 
-public partial class Program { }
+IResult ProcessarGerarRelatorio(List<DespesaDto> despesas)
+{
+    var todosLogs = new List<string>();
+    var (logsTransacoes, transacoes) = CalculadoraDeDespesasService.GerarTransacoes(despesas);
+    todosLogs.AddRange(logsTransacoes);
 
+    var (logsOtimizacao, transacoesOtimizadas) = CalculadoraDeDespesasService.GerarTransacoesOtimizado(transacoes);
+    todosLogs.AddRange(logsOtimizacao);
+
+    var stream = ArquivoService.GerarArquivoFinal(todosLogs, transacoesOtimizadas);
+    var filename = $"Resultado_Otimizado_Racha_Inteligente_{DateTime.Now:yyyyMMdd_HHmmss}.txt";
+
+    return Results.File(stream, "text/plain", filename);
+}
+
+public partial class Program { }

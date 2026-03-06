@@ -19,7 +19,7 @@ public class RacharEndpointTests : IClassFixture<WebApplicationFactory<Program>>
     {
         var content = new MultipartFormDataContent();
         
-        var response = await _client.PostAsync("/Rachar", content);
+        var response = await _client.PostAsync("/RacharPorArquivo", content);
         
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
@@ -32,7 +32,7 @@ public class RacharEndpointTests : IClassFixture<WebApplicationFactory<Program>>
         fileContent.Headers.ContentType = MediaTypeHeaderValue.Parse("text/plain");
         content.Add(fileContent, "file", "test.txt");
 
-        var response = await _client.PostAsync("/Rachar", content);
+        var response = await _client.PostAsync("/RacharPorArquivo", content);
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
@@ -48,7 +48,7 @@ public class RacharEndpointTests : IClassFixture<WebApplicationFactory<Program>>
         fileContent.Headers.ContentType = MediaTypeHeaderValue.Parse("text/csv");
         content.Add(fileContent, "file", "despesas.csv");
 
-        var response = await _client.PostAsync("/Rachar", content);
+        var response = await _client.PostAsync("/RacharPorArquivo", content);
 
         response.EnsureSuccessStatusCode();
         response.Content.Headers.ContentType?.MediaType.Should().Be("text/plain");
@@ -76,7 +76,7 @@ public class RacharEndpointTests : IClassFixture<WebApplicationFactory<Program>>
         fileContent.Headers.ContentType = MediaTypeHeaderValue.Parse("application/json");
         content.Add(fileContent, "file", "despesas.json");
 
-        var response = await _client.PostAsync("/Rachar", content);
+        var response = await _client.PostAsync("/RacharPorArquivo", content);
 
         response.EnsureSuccessStatusCode();
         response.Content.Headers.ContentType?.MediaType.Should().Be("text/plain");

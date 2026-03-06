@@ -1,4 +1,4 @@
-﻿using RachaInteligente.Dto;
+﻿using RachaInteligente.Shared.Dto;
 
 namespace RachaInteligente.Service;
 
@@ -35,11 +35,14 @@ public static class CalculadoraDeDespesasService
         logs.Add("=== Agrupando transações quando há multiplas dividas entre pagador e devedor ===");
 
         var transacoesSimplificadas = transacoes
-            .GroupBy(t => new { t.QuemPaga, t.QuemRecebe })
+            .GroupBy(t => new { 
+                QuemPaga = t.QuemPaga.Trim().ToUpperInvariant(), 
+                QuemRecebe = t.QuemRecebe.Trim().ToUpperInvariant() 
+            })
             .Select(g => new TransacaoDto
             {
-                QuemPaga = g.Key.QuemPaga,
-                QuemRecebe = g.Key.QuemRecebe,
+                QuemPaga = transacoes.First(x => x.QuemPaga.Trim().ToUpperInvariant() == g.Key.QuemPaga).QuemPaga,
+                QuemRecebe = transacoes.First(x => x.QuemRecebe.Trim().ToUpperInvariant() == g.Key.QuemRecebe).QuemRecebe,
                 Valor = g.Sum(t => t.Valor)
             })
             .ToList();
@@ -61,7 +64,7 @@ public static class CalculadoraDeDespesasService
 
         logs.Add("=== Calculando saldo líquido por pessoa ===");
 
-        var saldos = new Dictionary<string, decimal>();
+        var saldos = new Dictionary<string, decimal>(StringComparer.OrdinalIgnoreCase);
 
         foreach (var t in transacoes)
         {

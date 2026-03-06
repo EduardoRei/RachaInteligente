@@ -1,0 +1,322 @@
+@page "/"
+@using RachaInteligente.Shared.Dto
+@inject HttpClient Http
+@inject IJSRuntime JS
+
+<PageTitle>RachaInteligente</PageTitle>
+
+<div class="m-4 p-4 border rounded-3 shadow-sm bg-white" style="min-height: 85vh;">
+    
+    @* 1. Header com Descrição *@
+    <div class="text-center mb-4">
+        <h1 class="fw-bold display-5 text-success">RachaInteligente</h1>
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <p class="text-muted lead">Adicione as despesas do grupo e deixe o algoritmo encontrar a forma mais simples de acertar as contas, com o menor número possível de transferências.</p>
+            </div>
+        </div>
+    </div>
+
+    @* 2. Tabs *@
+    <div class="d-flex justify-content-center mb-4">
+        <div class="btn-group shadow-sm">
+            <button class="btn btn-outline-success px-4 @(!exibirFormularioManual ? "active" : "")" @onclick="() => { exibirFormularioManual = false; FecharDropdowns(); }">Enviar Arquivo</button>
+            <button class="btn btn-outline-success px-4 @(exibirFormularioManual ? "active" : "")" @onclick="() => { exibirFormularioManual = true; FecharDropdowns(); }">Montar Despesas</button>
+        </div>
+    </div>
+
+    @if (!exibirFormularioManual)
+    {
+        <div class="row justify-content-center">
+            <div class="col-md-6 text-center p-5 border rounded-4 bg-light shadow-sm">
+                <h4 class="mb-3 text-success fw-bold">Processar Arquivo</h4>
+                <InputFile OnChange="OnInputFileChange" class="form-control mb-3 border-success" accept=".csv,.json" />
+                <div class="d-flex justify-content-center gap-2">
+                    <button class="btn btn-sm btn-link text-success text-decoration-none" @onclick="() => exibirModalEstrutura = true">Estrutura esperada</button>
+                    <button class="btn btn-success px-4 shadow-sm" @onclick="ProcessarArquivo" disabled="@(selectedFile == null || isProcessing)">
+                        @if(isProcessing) { <span class="spinner-border spinner-border-sm me-2"></span> }
+                        Calcular Acertos
+                    </button>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        @* GESTÃO DE PARTICIPANTES *@
+        <div class="card border mb-4 rounded-3 shadow-sm border-light">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h6 class="fw-bold text-uppercase text-secondary mb-0" style="font-size: 0.7rem; letter-spacing: 1px;">1. Participantes (@participantes.Count/30)</h6>
+                    <button class="btn btn-sm btn-outline-danger border-0" @onclick="ResetarTudo"><i class="bi bi-arrow-counterclockwise"></i> Resetar Tudo</button>
+                </div>
+                <div class="row g-3">
+                    <div class="col-md-5">
+                        <div class="input-group input-group-sm">
+                            <input @bind="novoParticipante" @bind:event="oninput" @onkeyup="HandleParticipanteEnter" class="form-control border-success" placeholder="Nome do participante..." disabled="@(participantes.Count >= 30)" />
+                            <button class="btn btn-success" @onclick="AdicionarParticipante" disabled="@(participantes.Count >= 30)">Adicionar</button>
+                        </div>
+                        @if (!string.IsNullOrEmpty(participanteErrorMessage))
+                        {
+                            <div class="text-danger small fw-bold mt-1">@participanteErrorMessage</div>
+                        }
+                        <small class="text-muted" style="font-size: 0.65rem;">* Nomes são únicos (Matheus e matheus são considerados iguais).</small>
+                    </div>
+                    <div class="col-md-7 text-end">
+                        <div class="d-flex flex-wrap gap-2 justify-content-end">
+                            @foreach (var p in participantes)
+                            {
+                                <div class="badge bg-white border border-success text-success px-3 py-2 d-flex align-items-center shadow-sm rounded-pill">
+                                    <span class="fw-bold">@p</span>
+                                    <button class="btn-close ms-2" style="font-size: 0.5rem;" @onclick="() => RemoverParticipante(p)"></button>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        @* TABELA DE DESPESAS *@
+        <div class="card border rounded-3 shadow-sm border-light">
+            <div class="card-body p-0">
+                <div class="p-3 bg-light border-bottom d-flex justify-content-between align-items-center">
+                    <h6 class="fw-bold text-uppercase text-secondary mb-0" style="font-size: 0.7rem; letter-spacing: 1px;">2. Lançar Despesas</h6>
+                    <button class="btn btn-sm btn-outline-success fw-bold" @onclick="AdicionarNovaLinha">+ Nova Despesa</button>
+                </div>
+                <div class="table-responsive" style="min-height: 400px; overflow-y: visible;">
+                    <table class="table table-hover mb-0 align-middle">
+                        <thead class="table-light small text-uppercase">
+                            <tr>
+                                <th class="ps-3">Descrição</th>
+                                <th>Data</th>
+                                <th width="150px">Valor</th>
+                                <th>Pago Por</th>
+                                <th>Participantes</th>
+                                <th class="text-center pe-3"></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @for (int i = 0; i < despesasManuais.Count; i++)
+                            {
+                                var index = i;
+                                var d = despesasManuais[index];
+                                <tr class="@(LinhaCompleta(d) ? "" : "table-warning-subtle")">
+                                    <td class="ps-3"><input @bind="d.Descricao" class="form-control form-control-sm border-0 bg-transparent" placeholder="Descrição da despesa" /></td>
+                                    <td><input @bind="d.Data" type="date" class="form-control form-control-sm border-0 bg-transparent" /></td>
+                                    <td>
+                                        <div class="input-group input-group-sm border rounded-2 bg-white">
+                                            <span class="input-group-text bg-transparent border-0 text-muted px-2" style="font-size: 0.7rem;">R$</span>
+                                            <input @bind="d.Valor" @oninput="@(e => d.Valor = ValidarValorPositivo(e.Value))" type="number" min="0" step="0.01" class="form-control border-0 text-end fw-bold" />
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <select @bind="d.PagoPor" class="form-select form-select-sm border-0 bg-transparent fw-bold text-success">
+                                            <option value="">-- Selecione --</option>
+                                            @foreach (var p in participantes) { <option value="@p">@p</option> }
+                                        </select>
+                                    </td>
+                                    <td style="position: relative;">
+                                        <button class="btn btn-sm w-100 text-start border bg-white @(string.IsNullOrEmpty(d.Nomes) ? "text-muted" : "text-dark fw-bold border-success")" @onclick="() => ToggleDropdown(index)">
+                                            <i class="bi bi-people me-1"></i> @(string.IsNullOrEmpty(d.Nomes) ? "Quem participou?" : LimitarTexto(d.Nomes, 18))
+                                        </button>
+                                        @if (abertoDropdownIndex == index)
+                                        {
+                                            <div class="dropdown-menu show p-3 shadow-lg border-success" style="position: absolute; top: 100%; left: 0; z-index: 1000; min-width: 220px; display: block;">
+                                                <div class="d-flex justify-content-between mb-2 border-bottom pb-2">
+                                                    <span class="small fw-bold text-success">Dividir entre:</span>
+                                                    <button class="btn btn-sm btn-link text-success p-0 text-decoration-none" @onclick="() => SelecionarTodos(d)">Todos</button>
+                                                </div>
+                                                <div style="max-height: 180px; overflow-y: auto;">
+                                                    @foreach (var p in participantes)
+                                                    {
+                                                        <div class="form-check small mb-1">
+                                                            <input class="form-check-input" type="checkbox" checked="@IsParticipanteSelecionado(d, p)" @onchange="@(e => ToggleParticipante(d, p, e.Value))" id="@($"chk-{index}-{p}")">
+                                                            <label class="form-check-label w-100" style="cursor: pointer;" for="@($"chk-{index}-{p}")">@p</label>
+                                                        </div>
+                                                    }
+                                                </div>
+                                                <div class="mt-2 pt-2 border-top text-end"><button class="btn btn-sm btn-success px-4" @onclick="FecharDropdowns">OK</button></div>
+                                            </div>
+                                        }
+                                    </td>
+                                    <td class="text-center pe-3"><button class="btn btn-link text-danger p-0" @onclick="() => despesasManuais.Remove(d)">&times;</button></td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+                <div class="p-3 bg-light text-end border-top">
+                    @if (!PodeCalcular()) { <span class="text-muted small me-3 fst-italic">Complete todas as linhas para calcular.</span> }
+                    <button class="btn btn-success px-5 fw-bold shadow-sm btn-lg" @onclick="ProcessarManual" disabled="@(!PodeCalcular() || isProcessing)">
+                        @if(isProcessing) { <span class="spinner-border spinner-border-sm me-2"></span> }
+                        CALCULAR ACERTOS
+                    </button>
+                </div>
+            </div>
+        </div>
+    }
+
+    @if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <div class="alert alert-danger mt-4 border-0 shadow-sm rounded-3">@errorMessage</div>
+    }
+</div>
+
+@* 3. MODAL DE RESULTADO (NOVO) *@
+@if (exibirModalResultado)
+{
+    <div class="modal d-block" style="background: rgba(0,0,0,0.6); position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 2050;">
+        <div class="modal-dialog modal-lg modal-dialog-centered shadow-lg">
+            <div class="modal-content border-0 rounded-4">
+                <div class="modal-header bg-success text-white border-0">
+                    <h5 class="modal-title fw-bold"><i class="bi bi-check-circle me-2"></i>Cálculo Concluído com Sucesso!</h5>
+                    <button type="button" class="btn-close btn-close-white" @onclick="() => exibirModalResultado = false"></button>
+                </div>
+                <div class="modal-body p-4 bg-light">
+                    <h6 class="fw-bold mb-3">Relatório de Acertos:</h6>
+                    <div class="bg-white border rounded p-3 shadow-inner" style="max-height: 400px; overflow-y: auto;">
+                        <pre class="mb-0 font-monospace small" style="white-space: pre-wrap;">@resultadoTexto</pre>
+                    </div>
+                </div>
+                <div class="modal-footer bg-white border-0 py-3">
+                    <button class="btn btn-outline-secondary px-4" @onclick="() => exibirModalResultado = false">Fechar</button>
+                    <button class="btn btn-success px-4 fw-bold" @onclick="BaixarResultadoAtual">
+                        <i class="bi bi-download me-2"></i> Baixar Relatório (.txt)
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@* MODAL ESTRUTURA *@
+@if (exibirModalEstrutura)
+{
+    <div class="modal d-block" style="background: rgba(0,0,0,0.5); position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 2000;">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content border-0 rounded-4 shadow-lg">
+                <div class="modal-header bg-success text-white border-0"><h5 class="modal-title fw-bold">Estrutura do Arquivo</h5><button type="button" class="btn-close btn-close-white" @onclick="() => exibirModalEstrutura = false"></button></div>
+                <div class="modal-body p-4 bg-white">
+                    <div class="mb-4">
+                        <h6 class="fw-bold text-success border-bottom pb-2">CSV (Ponto e Vírgula)</h6>
+                        <div class="bg-light p-3 border rounded font-monospace small">
+                            Despesa;Data;Valor;Pago por; Nomes<br />
+                            Mercado;2024-03-05;150,00;João;João, Maria, Carlos<br />
+                            Gasolina;2024-03-05;250,50;Carlos;Carlos, João<br />
+                            Jantar;2024-03-06;180,00;Maria;Maria, Carlos, João
+                        </div>
+                    </div>
+                    <div>
+                        <h6 class="fw-bold text-success border-bottom pb-2">JSON (Array de Objetos)</h6>
+                        <div class="bg-dark text-light p-3 border rounded font-monospace small shadow-inner" style="max-height: 250px; overflow-y: auto;">
+<pre class="mb-0">
+[
+  {
+    "descricao": "Mercado",
+    "data": "2024-03-05",
+    "valor": 150.00,
+    "pagoPor": "João",
+    "nomes": "João, Maria, Carlos"
+  },
+  {
+    "descricao": "Gasolina",
+    "data": "2024-03-05",
+    "valor": 250.50,
+    "pagoPor": "Carlos",
+    "nomes": "Carlos, João"
+  },
+  {
+    "descricao": "Jantar",
+    "data": "2024-03-06",
+    "valor": 180.00,
+    "pagoPor": "Maria",
+    "nomes": "Maria, Carlos, João"
+  }
+]</pre>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light border-0"><button class="btn btn-success px-5" @onclick="() => exibirModalEstrutura = false">Entendi!</button></div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private bool exibirFormularioManual = true;
+    private bool exibirModalEstrutura = false;
+    private bool exibirModalResultado = false;
+    private string resultadoTexto = "";
+    private byte[]? resultadoBytes;
+    private bool isProcessing = false;
+    private string? errorMessage;
+    private IBrowserFile? selectedFile;
+    private List<string> participantes = new();
+    private string novoParticipante = "";
+    private List<DespesaDto> despesasManuais = new();
+    private int abertoDropdownIndex = -1;
+
+    private void ToggleDropdown(int index) => abertoDropdownIndex = (abertoDropdownIndex == index) ? -1 : index;
+    private void FecharDropdowns() => abertoDropdownIndex = -1;
+    private string? participanteErrorMessage;
+
+    private void AdicionarParticipante() { 
+        participanteErrorMessage = null;
+        if (participantes.Count < 30 && !string.IsNullOrWhiteSpace(novoParticipante)) { 
+            var nomeLimpo = novoParticipante.Trim();
+            if (participantes.Any(p => p.Equals(nomeLimpo, StringComparison.OrdinalIgnoreCase))) {
+                participanteErrorMessage = "Este nome já está na lista!";
+                return;
+            }
+            participantes.Add(nomeLimpo); 
+            novoParticipante = ""; 
+            if (!despesasManuais.Any()) AdicionarNovaLinha(); 
+        } 
+    }
+    private void HandleParticipanteEnter(KeyboardEventArgs e) { if (e.Key == "Enter") AdicionarParticipante(); }
+    private void RemoverParticipante(string nome) { participantes.Remove(nome); foreach(var d in despesasManuais) { if (d.PagoPor == nome) d.PagoPor = ""; ToggleParticipante(d, nome, false); } }
+    private void ResetarTudo() { participantes.Clear(); despesasManuais.Clear(); errorMessage = null; FecharDropdowns(); }
+    private void AdicionarNovaLinha() { despesasManuais.Add(new DespesaDto { Data = DateTime.Now }); FecharDropdowns(); }
+    private void OnInputFileChange(InputFileChangeEventArgs e) { selectedFile = e.File; errorMessage = null; }
+    private bool IsParticipanteSelecionado(DespesaDto d, string nome) => !string.IsNullOrWhiteSpace(d.Nomes) && d.Nomes.Split(',').Select(n => n.Trim()).Contains(nome);
+    private void ToggleParticipante(DespesaDto d, string nome, object? checkedValue) { var nomesLista = string.IsNullOrWhiteSpace(d.Nomes) ? new List<string>() : d.Nomes.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(n => n.Trim()).ToList(); if (checkedValue is bool b && b) { if (!nomesLista.Contains(nome)) nomesLista.Add(nome); } else { nomesLista.Remove(nome); } d.Nomes = string.Join(", ", nomesLista); StateHasChanged(); }
+    private void SelecionarTodos(DespesaDto d) { d.Nomes = string.Join(", ", participantes); StateHasChanged(); }
+    private string LimitarTexto(string texto, int limite) => texto.Length > limite ? texto.Substring(0, limite) + "..." : texto;
+
+    private decimal ValidarValorPositivo(object? value)
+    {
+        if (decimal.TryParse(value?.ToString()?.Replace(".", ","), out var result))
+        {
+            return result < 0 ? 0 : result;
+        }
+        return 0;
+    }
+
+    private bool LinhaCompleta(DespesaDto d) => !string.IsNullOrWhiteSpace(d.Descricao) && d.Valor > 0 && !string.IsNullOrWhiteSpace(d.PagoPor) && !string.IsNullOrWhiteSpace(d.Nomes);
+    private bool PodeCalcular() => despesasManuais.Any() && participantes.Any() && despesasManuais.All(LinhaCompleta);
+
+    private async Task ProcessarArquivo() { if (selectedFile == null) return; var content = new MultipartFormDataContent(); content.Add(new StreamContent(selectedFile.OpenReadStream(5 * 1024 * 1024)), "file", selectedFile.Name); await EnviarSolicitacao("RacharPorArquivo", content); }
+    private async Task ProcessarManual() { if (!PodeCalcular()) return; await EnviarSolicitacao("Rachar", JsonContent.Create(despesasManuais)); }
+
+    private async Task EnviarSolicitacao(string endpoint, HttpContent content) {
+        try {
+            isProcessing = true; errorMessage = null;
+            var response = await Http.PostAsync(endpoint, content);
+            if (response.IsSuccessStatusCode) {
+                resultadoBytes = await response.Content.ReadAsByteArrayAsync();
+                resultadoTexto = System.Text.Encoding.UTF8.GetString(resultadoBytes);
+                exibirModalResultado = true;
+            } else { errorMessage = await response.Content.ReadAsStringAsync(); }
+        } catch (Exception ex) { errorMessage = $"Erro: {ex.Message}"; }
+        finally { isProcessing = false; }
+    }
+
+    private async Task BaixarResultadoAtual() {
+        if (resultadoBytes == null) return;
+        var fileName = $"Resultado_Otimizado_Racha_Inteligente_{DateTime.Now:yyyyMMdd_HHmmss}.txt";
+        using var stream = new MemoryStream(resultadoBytes);
+        using var streamRef = new DotNetStreamReference(stream);
+        await JS.InvokeVoidAsync("downloadFileFromStream", fileName, streamRef);
+    }
+}

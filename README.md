@@ -1,23 +1,18 @@
 # 💸 RachaInteligente
-
 Cansado de fazer conta de padaria depois do churrasco? O **RachaInteligente** resolve a bagunça. 
-
 Esta API foi feita para quem quer dividir gastos sem dor de cabeça. O grande diferencial? Ela não só divide a conta, mas calcula o **caminho mais curto** para todo mundo se pagar, garantindo o menor número possível de transferências entre os amigos.
-
 Além de te dizer quem paga quem, o sistema gera um "relatório de transparência" em .txt para ninguém desconfiar dos cálculos.
 
 ---
 
 ## 🚀 O que ele faz?
-
 *   **Inteligência Financeira**: Usa um algoritmo que conecta as maiores dívidas aos maiores créditos.
 *   **Transparência Total**: Gera um log detalhado explicando o "passo a passo" matemático.
-*   **Simplicidade**: Aceita arquivos JSON ou CSV e resolve tudo em segundos.
+*   **Simplicidade**: Aceita entrada manual pela interface ou arquivos JSON/CSV e resolve tudo em segundos.
 
 ---
 
 ## ⚙️ Como a mágica acontece
-
 O fluxo foi desenhado para ser rápido e preciso:
 
 ```mermaid
@@ -40,18 +35,58 @@ graph TD
 ---
 
 ## 📁 Arquivos de Exemplo
-
 Para testar a API, você pode usar os arquivos de exemplo que deixamos prontos na pasta `.docs`:
-
 *   [📄 Exemplo em JSON](.docs/despesas_mock.json)
 *   [📊 Exemplo em CSV](.docs/despesas_mock.csv)
+
+### Estrutura esperada
+
+**CSV** — use ponto e vírgula (`;`) como separador:
+```
+Despesa;Data;Valor;Pago por;Nomes
+```
+
+**JSON**:
+```json
+[
+  {
+    "descricao": "Churrasco",
+    "data": "2024-03-05",
+    "valor": 150.00,
+    "pagoPor": "Carlos",
+    "nomes": "Carlos, João, Maria"
+  }
+]
+```
+
+*Obs: o nome não é case-sensitive, então João, joão e JOÃO serão considerados a mesma pessoa.*
 
 ---
 
 ## 🛠️ Tecnologias
 
-*   **.NET 10** (Alta performance)
-*   **Scalar UI** (Interface amigável para testar a API)
+### Front-end
+*   **Blazor WebAssembly (.NET 10 Preview)** — Interface rica e responsiva rodando C# nativamente no navegador via WASM.
+*   **Bootstrap 5** — Estilização moderna e componentes responsivos.
+
+### Back-end
+*   **ASP.NET Core Web API** — Alta performance para processamento dos cálculos.
+*   **Minimal APIs** — Endpoints leves e rápidos.
+
+### Arquitetura e Infraestrutura
+*   **Shared Class Library** — DTOs compartilhados entre front e back, garantindo um único contrato de dados.
+*   **Docker** — Containerização completa para facilitar o deploy.
+
+---
+
+## 🔌 Endpoints
+
+O projeto oferece duas formas de entrada de dados:
+
+| Endpoint | Método | Descrição |
+|---|---|---|
+| `/Rachar` | `POST` | Recebe um JSON de `List<DespesaDto>` direto da interface Blazor |
+| `/RacharPorArquivo` | `POST` | Recebe upload de arquivo `.csv` ou `.json` para processamento em lote |
 
 ---
 
@@ -63,15 +98,15 @@ Se você tem o Docker instalado, basta rodar:
 docker build -t rachainteligente .
 docker run -d -p 8080:8080 --name rachainteligente rachainteligente
 ```
-Acesse `http://localhost:8080/scalar/` no seu navegador.
+Acesse `http://localhost:8080` no seu navegador.
 
 ### Opção 2: Manual (.NET 10)
 1.  Tenha o SDK do .NET 10 instalado.
 2.  Clone o projeto e rode:
     ```bash
-    dotnet run --project RachaInteligente
+    dotnet run --project RachaInteligente/RachaInteligente.csproj
     ```
-3.  Acesse `http://localhost:5298/scalar/` no seu navegador e suba seu arquivo de despesas.
+3.  Acesse `http://localhost:5298` no seu navegador e cadastre as despesas ou suba o seu arquivo.
 
 ---
 

@@ -1,4 +1,4 @@
-﻿using RachaInteligente.Dto;
+﻿using RachaInteligente.Shared.Dto;
 using System.Globalization;
 using System.Text;
 
@@ -106,7 +106,7 @@ public static class ArquivoService
         return despesas;
     }
 
-    private static void DefinirNomesEDevedoresDespesas(DespesaDto despesa)
+    public static void DefinirNomesEDevedoresDespesas(DespesaDto despesa)
     {
            despesa.Nomes = despesa.Nomes.Trim().Trim('"');
 

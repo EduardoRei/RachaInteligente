@@ -1,4 +1,4 @@
-﻿using RachaInteligente.Dto;
+﻿using RachaInteligente.Shared.Dto;
 
 namespace RachaInteligente.Service;
 
