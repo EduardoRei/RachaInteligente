@@ -1,5 +1,5 @@
-# 💸 RachaInteligente
-Cansado de fazer conta de padaria depois do churrasco? O **RachaInteligente** resolve a bagunça. 
+# 💸 Racha Inteligente
+Cansado de fazer conta de padaria depois do churrasco? O **Racha Inteligente** resolve a bagunça. 
 Esta API foi feita para quem quer dividir gastos sem dor de cabeça. O grande diferencial? Ela não só divide a conta, mas calcula o **caminho mais curto** para todo mundo se pagar, garantindo o menor número possível de transferências entre os amigos.
 Além de te dizer quem paga quem, o sistema gera um "relatório de transparência" em .txt para ninguém desconfiar dos cálculos.
 
@@ -14,7 +14,7 @@ Além de te dizer quem paga quem, o sistema gera um "relatório de transparênci
 
 ## 📸 Demonstração
 
-Confira abaixo como é a interface do **RachaInteligente** em ação:
+Confira abaixo como é a interface do **Racha Inteligente** em ação:
 
 ### 1. Processamento por Arquivo
 Arraste e solte seu arquivo CSV ou JSON para processar dezenas de despesas instantaneamente.
