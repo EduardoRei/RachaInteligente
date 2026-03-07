@@ -107,7 +107,7 @@ public static class CalculadoraDeDespesasService
             var devedor = devedores[i];
             var credor = credores[j];
 
-            var valor = Math.Min(devedor.Valor, credor.Valor);
+            var valor = Math.Round(Math.Min(devedor.Valor, credor.Valor), 2);
 
             transacoesOtimizadas.Add(new TransacaoDto
             {
@@ -118,8 +118,8 @@ public static class CalculadoraDeDespesasService
 
             logs.Add($"{devedor.Nome} paga {valor:C} para {credor.Nome}");
 
-            devedor.Valor -= valor;
-            credor.Valor -= valor;
+            devedor.Valor = Math.Round(devedor.Valor - valor, 2);
+            credor.Valor = Math.Round(credor.Valor - valor, 2);
 
             devedores[i] = devedor;
             credores[j] = credor;
