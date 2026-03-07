@@ -16,7 +16,7 @@ public class DespesaDto
 
     public List<DevedorDto> Devedores { get; private set; } = new List<DevedorDto>();
 
-    public decimal CalcularValorUnitario() => QuantidadePessoas > 0 ? Valor / QuantidadePessoas : 0;
+    public decimal CalcularValorUnitario() => QuantidadePessoas > 0 ? Math.Round(Valor / QuantidadePessoas, 2) : 0;
     
     public void AdicionarDevedor(string nome, decimal valor)
     {

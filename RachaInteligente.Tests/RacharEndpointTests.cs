@@ -1,7 +1,9 @@
 using System.Net;
 using System.Net.Http.Headers;
+using System.Net.Http.Json;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc.Testing;
+using RachaInteligente.Shared.Dto;
 
 namespace RachaInteligente.Tests;
 
@@ -83,5 +85,28 @@ public class RacharEndpointTests : IClassFixture<WebApplicationFactory<Program>>
         var text = await response.Content.ReadAsStringAsync();
         text.Should().Contain("Bob deve pagar");
         text.Should().Contain("Alice");
+    }
+
+    [Fact]
+    public async Task Post_Rachar_JsonNoCorpo_RetornaTxtComRelatorio()
+    {
+        var despesas = new List<DespesaDto>
+        {
+            new() {
+                Descricao = "Lanche",
+                Data = DateTime.Now,
+                Valor = 60,
+                PagoPor = "Alice",
+                Nomes = "Alice, Bob"
+            }
+        };
+
+        var response = await _client.PostAsJsonAsync("/Rachar", despesas);
+
+        response.EnsureSuccessStatusCode();
+        response.Content.Headers.ContentType?.MediaType.Should().Be("text/plain");
+        var text = await response.Content.ReadAsStringAsync();
+        text.Should().Contain("Bob deve pagar");
+        text.Should().Contain("30,00");
     }
 }
