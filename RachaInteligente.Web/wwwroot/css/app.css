@@ -113,3 +113,23 @@ code {
 .form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
     text-align: start;
 }
+
+/* Tabela de despesas — larguras mínimas fixas para não comprimir em telas pequenas */
+/* A div table-responsive cuida do scroll horizontal automaticamente              */
+.table-despesas th:nth-child(1),
+.table-despesas td:nth-child(1) { min-width: 180px; }
+
+.table-despesas th:nth-child(2),
+.table-despesas td:nth-child(2) { min-width: 135px; }
+
+.table-despesas th:nth-child(3),
+.table-despesas td:nth-child(3) { min-width: 150px; }
+
+.table-despesas th:nth-child(4),
+.table-despesas td:nth-child(4) { min-width: 150px; }
+
+.table-despesas th:nth-child(5),
+.table-despesas td:nth-child(5) { min-width: 200px; }
+
+.table-despesas th:nth-child(6),
+.table-despesas td:nth-child(6) { min-width: 44px; width: 44px; }

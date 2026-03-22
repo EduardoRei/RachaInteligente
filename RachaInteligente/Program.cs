@@ -27,6 +27,18 @@ app.MapScalarApiReference();
 // Endpoint leve para Keep-Alive (Ping)
 app.MapGet("/health", () => Results.Ok("Server is running"));
 
+// Em desenvolvimento, desabilita cache do browser para sempre refletir o código atual
+if (app.Environment.IsDevelopment())
+{
+    app.Use(async (context, next) =>
+    {
+        context.Response.Headers["Cache-Control"] = "no-cache, no-store, must-revalidate";
+        context.Response.Headers["Pragma"] = "no-cache";
+        context.Response.Headers["Expires"] = "0";
+        await next();
+    });
+}
+
 // Ordem correta de middlewares para Blazor Hosted
 app.UseBlazorFrameworkFiles();
 app.UseStaticFiles(new StaticFileOptions { ContentTypeProvider = provider });

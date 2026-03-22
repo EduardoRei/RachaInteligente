@@ -88,7 +88,7 @@
                     <button class="btn btn-sm btn-outline-success fw-bold" @onclick="AdicionarNovaLinha">+ Nova Despesa</button>
                 </div>
                 <div class="table-responsive" style="min-height: 400px; overflow-y: visible;">
-                    <table class="table table-hover mb-0 align-middle">
+                    <table class="table table-hover mb-0 align-middle table-despesas">
                         <thead class="table-light small text-uppercase">
                             <tr>
                                 <th class="ps-3">Descrição</th>
@@ -105,21 +105,21 @@
                                 var index = i;
                                 var d = despesasManuais[index];
                                 <tr class="@(LinhaCompleta(d) ? "" : "table-warning-subtle")">
-                                    <td class="ps-3"><input @bind="d.Descricao" class="form-control form-control-sm border-0 bg-transparent" placeholder="Descrição da despesa" /></td>
-                                    <td><input @bind="d.Data" type="date" class="form-control form-control-sm border-0 bg-transparent" /></td>
-                                    <td>
+                                    <td class="ps-3" data-label="Descrição"><input @bind="d.Descricao" class="form-control form-control-sm border-0 bg-transparent" placeholder="Descrição da despesa" /></td>
+                                    <td data-label="Data"><input @bind="d.Data" type="date" class="form-control form-control-sm border-0 bg-transparent" /></td>
+                                    <td data-label="Valor">
                                         <div class="input-group input-group-sm border rounded-2 bg-white">
                                             <span class="input-group-text bg-transparent border-0 text-muted px-2" style="font-size: 0.7rem;">R$</span>
-                                            <input @bind="d.Valor" @oninput="@(e => d.Valor = ValidarValorPositivo(e.Value))" type="number" min="0" step="0.01" class="form-control border-0 text-end fw-bold" />
+                                            <input value="@GetValorDisplay(d)" @oninput="@(e => AtualizarValor(d, e.Value?.ToString()))" type="text" inputmode="numeric" maxlength="13" class="form-control border-0 text-end fw-bold" placeholder="0,00" />
                                         </div>
                                     </td>
-                                    <td>
+                                    <td data-label="Pago Por">
                                         <select @bind="d.PagoPor" class="form-select form-select-sm border-0 bg-transparent fw-bold text-success">
                                             <option value="">-- Selecione --</option>
                                             @foreach (var p in participantes) { <option value="@p">@p</option> }
                                         </select>
                                     </td>
-                                    <td style="position: relative;">
+                                    <td data-label="Participantes" style="position: relative;">
                                         @* BOTÃO COM TOOLTIP (HINT) *@
                                         <button class="btn btn-sm w-100 text-start border bg-white @(string.IsNullOrEmpty(d.Nomes) ? "text-muted" : "text-dark fw-bold border-success")" 
                                                 @onclick="() => ToggleDropdown(index)" 
@@ -150,7 +150,7 @@
                                             </div>
                                         }
                                     </td>
-                                    <td class="text-center pe-3"><button class="btn btn-link text-danger p-0" @onclick="() => despesasManuais.Remove(d)">&times;</button></td>
+                                    <td class="text-center pe-3" data-label=""><button class="btn btn-link text-danger p-0" @onclick="() => despesasManuais.Remove(d)">&times;</button></td>
                                 </tr>
                             }
                         </tbody>
@@ -266,6 +266,7 @@
     private string novoParticipante = "";
     private List<DespesaDto> despesasManuais = new();
     private int abertoDropdownIndex = -1;
+    private Dictionary<DespesaDto, string> _valorDisplays = new();
 
     private void ToggleDropdown(int index) => abertoDropdownIndex = (abertoDropdownIndex == index) ? -1 : index;
     private void FecharDropdowns() => abertoDropdownIndex = -1;
@@ -286,7 +287,7 @@
     }
     private void HandleParticipanteEnter(KeyboardEventArgs e) { if (e.Key == "Enter") AdicionarParticipante(); }
     private void RemoverParticipante(string nome) { participantes.Remove(nome); foreach(var d in despesasManuais) { if (d.PagoPor == nome) d.PagoPor = ""; ToggleParticipante(d, nome, false); } }
-    private void ResetarTudo() { participantes.Clear(); despesasManuais.Clear(); errorMessage = null; FecharDropdowns(); }
+    private void ResetarTudo() { participantes.Clear(); despesasManuais.Clear(); _valorDisplays.Clear(); errorMessage = null; FecharDropdowns(); }
     private void AdicionarNovaLinha() { despesasManuais.Add(new DespesaDto { Data = DateTime.Now }); FecharDropdowns(); }
     private void OnInputFileChange(InputFileChangeEventArgs e) { selectedFile = e.File; errorMessage = null; }
     private bool IsParticipanteSelecionado(DespesaDto d, string nome) => !string.IsNullOrWhiteSpace(d.Nomes) && d.Nomes.Split(',').Select(n => n.Trim()).Contains(nome);
@@ -316,13 +317,35 @@
         return restantes > 0 ? $"{resultado} (+{restantes})" : resultado;
     }
 
-    private decimal ValidarValorPositivo(object? value)
+    private string GetValorDisplay(DespesaDto d)
     {
-        if (decimal.TryParse(value?.ToString()?.Replace(".", ","), out var result))
+        if (_valorDisplays.TryGetValue(d, out var display)) return display;
+        return d.Valor > 0 ? FormatarMoedaCentavos((long)(d.Valor * 100)) : "";
+    }
+
+    private void AtualizarValor(DespesaDto d, string? input)
+    {
+        var digits = new string((input ?? "").Where(char.IsDigit).ToArray());
+        if (string.IsNullOrEmpty(digits)) { _valorDisplays[d] = ""; d.Valor = 0; StateHasChanged(); return; }
+        if (digits.Length > 10) digits = digits[..10]; // trunca para os primeiros 10 dígitos e força re-render abaixo
+        var centavos = long.Parse(digits);
+        _valorDisplays[d] = FormatarMoedaCentavos(centavos);
+        d.Valor = centavos / 100m;
+        StateHasChanged();
+    }
+
+    private static string FormatarMoedaCentavos(long centavos)
+    {
+        var reais = centavos / 100;
+        var cents = centavos % 100;
+        var reaisStr = reais.ToString();
+        var sb = new System.Text.StringBuilder();
+        for (int i = 0; i < reaisStr.Length; i++)
         {
-            return result < 0 ? 0 : result;
+            if (i > 0 && (reaisStr.Length - i) % 3 == 0) sb.Append('.');
+            sb.Append(reaisStr[i]);
         }
-        return 0;
+        return $"{sb},{cents:D2}";
     }
 
     private bool LinhaCompleta(DespesaDto d) => !string.IsNullOrWhiteSpace(d.Descricao) && d.Valor > 0 && !string.IsNullOrWhiteSpace(d.PagoPor) && !string.IsNullOrWhiteSpace(d.Nomes);
