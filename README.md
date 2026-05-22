@@ -88,7 +88,7 @@ Despesa;Data;Valor;Pago por;Nomes
 ## 🛠️ Tecnologias
 
 ### Front-end
-*   **Blazor WebAssembly (.NET 10 Preview)** — Interface rica e responsiva rodando C# nativamente no navegador via WASM.
+*   **Blazor WebAssembly (.NET 10)** — Interface rica e responsiva rodando C# nativamente no navegador via WASM.
 *   **Bootstrap 5** — Estilização moderna e componentes responsivos.
 
 ### Back-end

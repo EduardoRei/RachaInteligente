@@ -35,15 +35,19 @@ public static class CalculadoraDeDespesasService
         logs.Add("=== Agrupando transações quando há multiplas dividas entre pagador e devedor ===");
 
         var transacoesSimplificadas = transacoes
-            .GroupBy(t => new { 
-                QuemPaga = t.QuemPaga.Trim().ToUpperInvariant(), 
-                QuemRecebe = t.QuemRecebe.Trim().ToUpperInvariant() 
+            .GroupBy(t => new {
+                QuemPaga = t.QuemPaga.Trim().ToUpperInvariant(),
+                QuemRecebe = t.QuemRecebe.Trim().ToUpperInvariant()
             })
-            .Select(g => new TransacaoDto
+            .Select(g =>
             {
-                QuemPaga = transacoes.First(x => x.QuemPaga.Trim().ToUpperInvariant() == g.Key.QuemPaga).QuemPaga,
-                QuemRecebe = transacoes.First(x => x.QuemRecebe.Trim().ToUpperInvariant() == g.Key.QuemRecebe).QuemRecebe,
-                Valor = g.Sum(t => t.Valor)
+                var primeira = g.First();
+                return new TransacaoDto
+                {
+                    QuemPaga = primeira.QuemPaga,
+                    QuemRecebe = primeira.QuemRecebe,
+                    Valor = g.Sum(t => t.Valor)
+                };
             })
             .ToList();
 

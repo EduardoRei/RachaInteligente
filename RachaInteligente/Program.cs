@@ -43,7 +43,9 @@ if (app.Environment.IsDevelopment())
 app.UseBlazorFrameworkFiles();
 app.UseStaticFiles(new StaticFileOptions { ContentTypeProvider = provider });
 
-app.MapPost("/RacharPorArquivo", async (IFormFile file) =>
+var logger = app.Logger;
+
+app.MapPost("/RacharPorArquivo", (IFormFile file) =>
 {
     if (file == null || file.Length == 0)
         return Results.BadRequest("Por favor, selecione um arquivo.");
@@ -54,12 +56,16 @@ app.MapPost("/RacharPorArquivo", async (IFormFile file) =>
         return ProcessarGerarRelatorio(despesas);
     }
     catch (ArgumentException ex) { return Results.BadRequest(ex.Message); }
-    catch (Exception ex) { return Results.Problem(ex.Message); }
+    catch (Exception ex)
+    {
+        logger.LogError(ex, "Falha ao processar arquivo de despesas");
+        return Results.Problem("Erro interno ao processar o arquivo. Tente novamente.");
+    }
 })
 .WithSummary("Processar arquivo de despesas")
 .DisableAntiforgery();
 
-app.MapPost("/Rachar", async ([FromBody] List<DespesaDto> despesas) =>
+app.MapPost("/Rachar", ([FromBody] List<DespesaDto> despesas) =>
 {
     if (despesas == null || !despesas.Any())
         return Results.BadRequest("A lista de despesas não pode estar vazia.");
@@ -73,7 +79,11 @@ app.MapPost("/Rachar", async ([FromBody] List<DespesaDto> despesas) =>
         return ProcessarGerarRelatorio(despesas);
     }
     catch (ArgumentException ex) { return Results.BadRequest(ex.Message); }
-    catch (Exception ex) { return Results.Problem(ex.Message); }
+    catch (Exception ex)
+    {
+        logger.LogError(ex, "Falha ao processar lista de despesas");
+        return Results.Problem("Erro interno ao processar as despesas. Tente novamente.");
+    }
 })
 .WithSummary("Processar lista JSON de despesas")
 .DisableAntiforgery();

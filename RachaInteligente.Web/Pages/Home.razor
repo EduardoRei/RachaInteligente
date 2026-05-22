@@ -173,85 +173,13 @@
     }
 </div>
 
-@* 3. MODAL DE RESULTADO (NOVO) *@
-@if (exibirModalResultado)
-{
-    <div class="modal d-block" style="background: rgba(0,0,0,0.6); position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 2050;">
-        <div class="modal-dialog modal-lg modal-dialog-centered shadow-lg">
-            <div class="modal-content border-0 rounded-4">
-                <div class="modal-header bg-success text-white border-0">
-                    <h5 class="modal-title fw-bold"><i class="bi bi-check-circle me-2"></i>Cálculo Concluído com Sucesso!</h5>
-                    <button type="button" class="btn-close btn-close-white" @onclick="() => exibirModalResultado = false"></button>
-                </div>
-                <div class="modal-body p-4 bg-light">
-                    <h6 class="fw-bold mb-3">Relatório de Acertos:</h6>
-                    <div class="bg-white border rounded p-3 shadow-inner" style="max-height: 400px; overflow-y: auto;">
-                        <pre class="mb-0 font-monospace small" style="white-space: pre-wrap;">@resultadoTexto</pre>
-                    </div>
-                </div>
-                <div class="modal-footer bg-white border-0 py-3">
-                    <button class="btn btn-outline-secondary px-4" @onclick="() => exibirModalResultado = false">Fechar</button>
-                    <button class="btn btn-success px-4 fw-bold" @onclick="BaixarResultadoAtual">
-                        <i class="bi bi-download me-2"></i> Baixar Relatório (.txt)
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-}
+<ResultadoModal Visivel="exibirModalResultado"
+                Texto="@resultadoTexto"
+                OnFechar="() => exibirModalResultado = false"
+                OnBaixar="BaixarResultadoAtual" />
 
-@* MODAL ESTRUTURA *@
-@if (exibirModalEstrutura)
-{
-    <div class="modal d-block" style="background: rgba(0,0,0,0.5); position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 2000;">
-        <div class="modal-dialog modal-lg modal-dialog-centered">
-            <div class="modal-content border-0 rounded-4 shadow-lg">
-                <div class="modal-header bg-success text-white border-0"><h5 class="modal-title fw-bold">Estrutura do Arquivo</h5><button type="button" class="btn-close btn-close-white" @onclick="() => exibirModalEstrutura = false"></button></div>
-                <div class="modal-body p-4 bg-white">
-                    <div class="mb-4">
-                        <h6 class="fw-bold text-success border-bottom pb-2">CSV (Ponto e Vírgula)</h6>
-                        <div class="bg-light p-3 border rounded font-monospace small">
-                            Despesa;Data;Valor;Pago por; Nomes<br />
-                            Mercado;2024-03-05;150,00;João;João, Maria, Carlos<br />
-                            Gasolina;2024-03-05;250,50;Carlos;Carlos, João<br />
-                            Jantar;2024-03-06;180,00;Maria;Maria, Carlos, João
-                        </div>
-                    </div>
-                    <div>
-                        <h6 class="fw-bold text-success border-bottom pb-2">JSON (Array de Objetos)</h6>
-                        <div class="bg-dark text-light p-3 border rounded font-monospace small shadow-inner" style="max-height: 250px; overflow-y: auto;">
-<pre class="mb-0">
-[
-  {
-    "descricao": "Mercado",
-    "data": "2024-03-05",
-    "valor": 150.00,
-    "pagoPor": "João",
-    "nomes": "João, Maria, Carlos"
-  },
-  {
-    "descricao": "Gasolina",
-    "data": "2024-03-05",
-    "valor": 250.50,
-    "pagoPor": "Carlos",
-    "nomes": "Carlos, João"
-  },
-  {
-    "descricao": "Jantar",
-    "data": "2024-03-06",
-    "valor": 180.00,
-    "pagoPor": "Maria",
-    "nomes": "Maria, Carlos, João"
-  }
-]</pre>
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-footer bg-light border-0"><button class="btn btn-success px-5" @onclick="() => exibirModalEstrutura = false">Entendi!</button></div>
-            </div>
-        </div>
-    </div>
-}
+<EstruturaArquivoModal Visivel="exibirModalEstrutura"
+                       OnFechar="() => exibirModalEstrutura = false" />
 
 @code {
     private bool exibirFormularioManual = true;
